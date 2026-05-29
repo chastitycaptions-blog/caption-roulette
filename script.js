@@ -36,7 +36,7 @@ function toggleShuffle() {
   shuffleMode = document.getElementById("shuffle-toggle").checked;
 }
 
-// SPIN with smooth roller animation (fixed visibility)
+// SPIN with smooth roller animation (with proper tick playback)
 function spin() {
   const spinner = document.getElementById("spinner");
   const img = document.getElementById("image");
@@ -44,13 +44,14 @@ function spin() {
 
   spinner.style.display = "block";
 
-  // IMPORTANT FIX — make image visible for roller frames
+  // Make image visible for roller frames
   img.style.display = "block";
   img.style.opacity = "0";
   img.style.filter = "blur(12px)";
 
   sourceLink.style.display = "none";
 
+  // Play an immediate tick when the user hits Spin
   playSound("sfx-tick");
 
   // Number of roller frames
@@ -71,9 +72,8 @@ function spin() {
       img.style.opacity = "0.4";
       img.style.filter = "blur(6px)";
 
-      const tick = document.getElementById("sfx-tick");
-      tick.currentTime = 0;
-      tick.play();
+      // Play tick for each roller frame (respects mute toggle)
+      playSound("sfx-tick");
 
       frame++;
       setTimeout(rollerStep, frameDelay(frame));
@@ -96,13 +96,16 @@ function spin() {
       showImage(choice.image);
       renderHistory();
 
+      // Final ding (respects mute toggle)
       playSound("sfx-ding");
+
       spinner.style.display = "none";
     }
   }
 
   rollerStep();
 }
+
 
 
 

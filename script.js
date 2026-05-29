@@ -6,13 +6,13 @@ let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentImage = null;
 let shuffleMode = false;
 
-// LOAD JSON
-fetch("captions.json")
+// LOAD JSON (MATCHES YOUR images.json FORMAT)
+fetch("images.json")
   .then(r => r.json())
   .then(data => {
     images = data;
     images.forEach(item => {
-      imageToSource[item.url] = item.source;
+      imageToSource[item.image] = item.post;
     });
   });
 
@@ -44,17 +44,17 @@ function spin() {
     let choice;
 
     if (shuffleMode) {
-      const unused = images.filter(i => !history.includes(i.url));
+      const unused = images.filter(i => !history.includes(i.image));
       if (unused.length === 0) history = [];
       choice = unused[Math.floor(Math.random() * unused.length)];
     } else {
       choice = images[Math.floor(Math.random() * images.length)];
     }
 
-    currentImage = choice.url;
-    showImage(choice.url);
+    currentImage = choice.image;
+    showImage(choice.image);
 
-    history.push(choice.url);
+    history.push(choice.image);
     renderHistory();
 
     spinner.style.display = "none";

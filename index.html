@@ -244,6 +244,58 @@
     #shuffle-toggle {
       cursor: pointer;
     }
+
+    /* Favorites button */
+    #favorites-toggle-btn {
+      position: fixed;
+      top: 50px;
+      right: 10px;
+      z-index: 1000001;
+      font-size: 14px;
+      padding: 6px 10px;
+      background: #333;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    #favorites-toggle-btn:hover {
+      background: #444;
+    }
+
+    /* Favorites panel */
+    #favorites-container {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 260px;
+      height: 100vh;
+      background: #181818;
+      border-left: 1px solid #333;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 1000000;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #favorites-container.open {
+      transform: translateX(0);
+    }
+
+    #favorites-header {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+      font-size: 16px;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    #favorites-list {
+      padding: 8px;
+      overflow-y: auto;
+      flex: 1;
+    }
   </style>
 </head>
 <body>
@@ -260,10 +312,19 @@
   <!-- History toggle button -->
   <button id="history-toggle-btn" onclick="toggleHistory()">History (H)</button>
 
+  <!-- Favorites toggle button -->
+  <button id="favorites-toggle-btn" onclick="toggleFavorites()">Favorites (★)</button>
+
   <!-- History panel -->
   <div id="history-container">
     <div id="history-header">History</div>
     <div id="history-list"></div>
+  </div>
+
+  <!-- Favorites panel -->
+  <div id="favorites-container">
+    <div id="favorites-header">Favorites</div>
+    <div id="favorites-list"></div>
   </div>
 
   <h1>Chastity Caption Roulette 🎰</h1>
@@ -305,6 +366,6 @@
   <audio id="sfx-tick" src="tick.mp3" preload="auto"></audio>
   <audio id="sfx-ding" src="ding.mp3" preload="auto"></audio>
 
-  <script src="script.js?v=10"></script>
+  <script src="script.js?v=11"></script>
 </body>
 </html>

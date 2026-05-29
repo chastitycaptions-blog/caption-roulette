@@ -13,10 +13,12 @@ function spin() {
   const img = document.getElementById("image");
   const spinner = document.getElementById("spinner");
 
-  // Hide the image, show the spinner
+  // Reset image state
   img.style.display = "none";
   img.style.opacity = "0";
   img.style.filter = "blur(12px)";
+
+  // Show spinner
   spinner.style.display = "block";
 
   // Pick a random image
@@ -27,20 +29,21 @@ function spin() {
   const tempImg = new Image();
   tempImg.onload = function () {
 
-    // Artificial anticipation delay (adjust here)
-    const delay = 800; // milliseconds — change to 1500 or 2000 later
+    const delay = 800; // adjust later
 
     setTimeout(() => {
       spinner.style.display = "none";
 
+      // Set the image source
       img.src = selectedImage;
       img.style.display = "block";
 
-      // Fade in + unblur
-      requestAnimationFrame(() => {
-        img.style.opacity = "1";
-        img.style.filter = "blur(0px)";
-      });
+      // FORCE the browser to register the blur state
+      void img.offsetWidth; // <-- magic line
+
+      // Now animate to clear blur + fade in
+      img.style.opacity = "1";
+      img.style.filter = "blur(0px)";
 
     }, delay);
   };

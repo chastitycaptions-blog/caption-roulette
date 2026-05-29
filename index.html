@@ -58,15 +58,14 @@
       100% { transform: rotate(360deg); }
     }
 
-    /* --- NSFW Overlay --- */
+    /* --- NSFW Overlay (fixed visibility) --- */
     #nsfw-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(4px);
+      background: rgba(0,0,0,0.65); /* lighter so box stands out */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -76,13 +75,62 @@
     }
 
     #nsfw-box {
-      background: #222;
+      background: #333; /* brighter box */
       padding: 30px;
       border-radius: 10px;
       max-width: 350px;
       text-align: center;
       border: 2px solid #ff4081;
+      color: white;
     }
 
     #nsfw-box h2 {
-      margin-bottom: 
+      margin-bottom: 10px;
+      color: #ff80b3; /* pink highlight */
+    }
+
+    #nsfw-box button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #ff4081;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: white;
+    }
+
+    #nsfw-box button:hover {
+      background: #ff5c9a;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NSFW Overlay -->
+  <div id="nsfw-overlay">
+    <div id="nsfw-box">
+      <h2>⚠️ Content Warning</h2>
+      <p>This site contains mature themes.<br>Viewer discretion advised.</p>
+      <button onclick="dismissNSFW()">Continue</button>
+    </div>
+  </div>
+
+  <h1>Caption Roulette 🎰</h1>
+  <button onclick="spin()">Spin</button>
+
+  <!-- Spinner -->
+  <div id="spinner">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Image -->
+  <div>
+    <img id="image" src="">
+  </div>
+
+  <!-- Cache‑busted script -->
+  <script src="script.js?v=5"></script>
+
+</body>
+</html>

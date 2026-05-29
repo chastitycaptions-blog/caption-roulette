@@ -21,34 +21,56 @@ function spin() {
   // Show spinner
   spinner.style.display = "block";
 
-  // Pick a random image
-  const randomIndex = Math.floor(Math.random() * images.length);
-  const selectedImage = images[randomIndex];
+  // --- FEATURE 3: Rolling effect ---
+  let rollCount = 0;
+  const maxRolls = 10; // number of rapid images shown
+  const rollInterval = 100; // ms between each roll
 
-  // Preload the image
-  const tempImg = new Image();
-  tempImg.onload = function () {
+  const roller = setInterval(() => {
+    rollCount++;
 
-    const delay = 800; // adjust later
+    // Pick a random image for the rolling preview
+    const randomIndex = Math.floor(Math.random() * images.length);
+    img.src = images[randomIndex];
+    img.style.display = "block";
+    img.style.opacity = "1";
+    img.style.filter = "blur(12px)";
 
-    setTimeout(() => {
-      spinner.style.display = "none";
+    if (rollCount >= maxRolls) {
+      clearInterval(roller);
+      showFinalImage();
+    }
+  }, rollInterval);
 
-      // Set the image source
-      img.src = selectedImage;
+  // --- After rolling, show the final image with blur reveal ---
+  function showFinalImage() {
+    const finalIndex = Math.floor(Math.random() * images.length);
+    const finalImage = images[finalIndex];
 
-      // Make the image visible *while still blurred*
-      img.style.display = "block";
+    const tempImg = new Image();
+    tempImg.onload = function () {
 
-      // FORCE the browser to register the blurred state
-      img.getBoundingClientRect();  // <-- this is the reliable version
+      const delay = 800; // anticipation delay
 
-      // Now animate to clear blur + fade in
-      img.style.opacity = "1";
-      img.style.filter = "blur(0px)";
+      setTimeout(() => {
+        spinner.style.display = "none";
 
-    }, delay);
-  };
+        // Set final image
+        img.src = finalImage;
+        img.style.display = "block";
+        img.style.opacity = "0";
+        img.style.filter = "blur(12px)";
 
-  tempImg.src = selectedImage;
+        // Force browser to register blurred state
+        img.getBoundingClientRect();
+
+        // Animate reveal
+        img.style.opacity = "1";
+        img.style.filter = "blur(0px)";
+
+      }, delay);
+    };
+
+    tempImg.src = finalImage;
+  }
 }

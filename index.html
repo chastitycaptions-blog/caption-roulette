@@ -1,1 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Caption Roulette</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      font-family: sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+    #image {
+      max-width: 90%;
+      margin-top: 20px;
+      border-radius: 8px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #ff4081;
+      color: white;
+    }
+    button:hover {
+      background: #ff5c9a;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Caption Roulette 🎰</h1>
+  <button onclick="spin()">Spin</button>
+
+  <div>
+    <img id="image" src="" style="display:none;">
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
 

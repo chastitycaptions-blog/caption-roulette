@@ -1,312 +1,192 @@
-let images = [];          // [{ image, post }]
-let currentIndex = null;  // index into images
-let historyList = [];     // [{ index }]
-let historyPos = -1;      // pointer into historyList
-let favorites = new Set(); // store image URLs
+// GLOBAL STATE
+let images = [];
+let imageToSource = {};
+let history = [];
+let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+let currentImage = null;
 let shuffleMode = false;
-let shufflePool = [];     // remaining indices for shuffle
 
-// Load JSON
-fetch("images.json")
+// LOAD JSON
+fetch("captions.json")
   .then(r => r.json())
   .then(data => {
     images = data;
-    initShufflePool();
-    loadFavorites();
+    images.forEach(item => {
+      imageToSource[item.url] = item.source;
+    });
   });
 
-// NSFW overlay
+// NSFW DISMISS
 function dismissNSFW() {
   const overlay = document.getElementById("nsfw-overlay");
   overlay.style.opacity = "0";
+  setTimeout(() => overlay.style.display = "none", 500);
+}
+
+// SHUFFLE MODE
+function toggleShuffle() {
+  shuffleMode = document.getElementById("shuffle-toggle").checked;
+}
+
+// SPIN
+function spin() {
+  const spinner = document.getElementById("spinner");
+  const img = document.getElementById("image");
+  const sourceLink = document.getElementById("source-link");
+
+  spinner.style.display = "block";
+  img.style.display = "none";
+  sourceLink.style.display = "none";
+
+  document.getElementById("sfx-spin").play();
+
   setTimeout(() => {
-    overlay.style.display = "none";
-  }, 500);
-}
+    let choice;
 
-// Shuffle helpers
-function initShufflePool() {
-  if (!images || images.length === 0) return;
-  shufflePool = Array.from(images.keys());
-  for (let i = shufflePool.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shufflePool[i], shufflePool[j]] = [shufflePool[j], shufflePool[i]];
-  }
-}
-
-function getNextIndex() {
-  if (!images || images.length === 0) return null;
-  if (shuffleMode) {
-    if (shufflePool.length === 0) {
-      initShufflePool();
+    if (shuffleMode) {
+      const unused = images.filter(i => !history.includes(i.url));
+      if (unused.length === 0) history = [];
+      choice = unused[Math.floor(Math.random() * unused.length)];
+    } else {
+      choice = images[Math.floor(Math.random() * images.length)];
     }
-    return shufflePool.pop();
-  } else {
-    return Math.floor(Math.random() * images.length);
-  }
+
+    currentImage = choice.url;
+    showImage(choice.url);
+
+    history.push(choice.url);
+    renderHistory();
+
+    spinner.style.display = "none";
+  }, 600);
 }
 
-// Sounds
-function playSound(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.currentTime = 0;
-  el.play().catch(() => {});
-}
+// SHOW IMAGE
+function showImage(url) {
+  const img = document.getElementById("image");
+  const sourceLink = document.getElementById("source-link");
+  const anchor = document.getElementById("source-link-anchor");
 
-// Favorites
-function loadFavorites() {
-  try {
-    const raw = localStorage.getItem("captionRouletteFavorites");
-    if (raw) {
-      const arr = JSON.parse(raw);
-      favorites = new Set(arr);
-    }
-  } catch (e) {
-    favorites = new Set();
-  }
+  img.style.opacity = "0";
+  img.style.filter = "blur(12px)";
+  img.src = url;
+
+  img.onload = () => {
+    img.style.display = "block";
+    setTimeout(() => {
+      img.style.opacity = "1";
+      img.style.filter = "blur(0)";
+    }, 50);
+  };
+
+  anchor.href = imageToSource[url] || "#";
+  anchor.textContent = imageToSource[url] ? "Tumblr Post" : "Unknown Source";
+  sourceLink.style.display = "block";
+
   updateFavoriteButton();
 }
 
-function saveFavorites() {
-  localStorage.setItem("captionRouletteFavorites", JSON.stringify(Array.from(favorites)));
-}
+// FAVORITES
+function toggleFavorite(urlOverride = null) {
+  const url = urlOverride || currentImage;
+  if (!url) return;
 
-function isCurrentFavorite() {
-  if (currentIndex === null) return false;
-  const url = images[currentIndex].image;
-  return favorites.has(url);
-}
-
-function toggleFavorite() {
-  if (currentIndex === null) return;
-  const url = images[currentIndex].image;
-  if (favorites.has(url)) {
-    favorites.delete(url);
+  if (favorites.includes(url)) {
+    favorites = favorites.filter(f => f !== url);
   } else {
-    favorites.add(url);
+    favorites.push(url);
   }
-  saveFavorites();
+
+  localStorage.setItem("favorites", JSON.stringify(favorites));
+
   updateFavoriteButton();
   renderHistory();
+  renderFavorites();
 }
 
 function updateFavoriteButton() {
   const btn = document.getElementById("favorite-btn");
-  if (!btn) return;
-  if (isCurrentFavorite()) {
-    btn.textContent = "♥ Favorited (F)";
-  } else {
-    btn.textContent = "♡ Favorite (F)";
-  }
+  if (!currentImage) return;
+
+  btn.textContent = favorites.includes(currentImage)
+    ? "❤️ Favorited"
+    : "♡ Favorite (F)";
 }
 
-// History
-function addToHistory(index) {
-  historyList.push({ index });
-  if (historyList.length > 10) {
-    historyList.shift();
-  }
-  historyPos = historyList.length - 1;
+// HISTORY PANEL
+function toggleHistory() {
+  document.getElementById("history-container").classList.toggle("open");
   renderHistory();
 }
 
 function renderHistory() {
-  const container = document.getElementById("history-list");
-  if (!container) return;
-  container.innerHTML = "";
-  historyList.forEach((entry, i) => {
-    const imgObj = images[entry.index];
-    if (!imgObj) return;
+  const list = document.getElementById("history-list");
+  list.innerHTML = "";
 
+  history.forEach(url => {
     const item = document.createElement("div");
     item.className = "history-item";
 
-    const thumb = document.createElement("img");
-    thumb.className = "history-thumb";
-    thumb.src = imgObj.image;
-    thumb.onclick = () => showImageByIndex(entry.index, false);
+    const source = imageToSource[url] || "#";
 
-    item.appendChild(thumb);
+    item.innerHTML = `
+      <img class="history-thumb" src="${url}" onclick="jumpToImage('${url}')">
+      <div class="history-meta">
+        <a href="${source}" target="_blank">Source</a>
+        <span class="history-fav" onclick="toggleFavorite('${url}')">
+          ${favorites.includes(url) ? "❤️" : "♡"}
+        </span>
+      </div>
+    `;
 
-    const meta = document.createElement("div");
-    meta.className = "history-meta";
-
-    const linkSpan = document.createElement("span");
-    if (imgObj.post) {
-      const a = document.createElement("a");
-      a.href = imgObj.post;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.textContent = "Source";
-      linkSpan.appendChild(a);
-    }
-
-    const favSpan = document.createElement("span");
-    favSpan.className = "history-fav";
-    const url = imgObj.image;
-    favSpan.textContent = favorites.has(url) ? "♥" : "♡";
-    favSpan.title = "Toggle favorite";
-    favSpan.onclick = () => {
-      if (favorites.has(url)) {
-        favorites.delete(url);
-      } else {
-        favorites.add(url);
-      }
-      saveFavorites();
-      updateFavoriteButton();
-      renderHistory();
-    };
-
-    meta.appendChild(linkSpan);
-    meta.appendChild(favSpan);
-    item.appendChild(meta);
-
-    container.appendChild(item);
+    list.appendChild(item);
   });
 }
 
-// Show image
-function showImageByIndex(index, fromSpin) {
-  if (!images[index]) return;
-  currentIndex = index;
-
-  const img = document.getElementById("image");
-  const spinner = document.getElementById("spinner");
-  const sourceDiv = document.getElementById("source-link");
-  const sourceAnchor = document.getElementById("source-link-anchor");
-
-  const obj = images[index];
-
-  spinner.style.display = "none";
-  img.style.display = "block";
-  img.style.opacity = "1";
-  img.style.filter = "blur(0px)";
-  img.src = obj.image;
-
-  if (obj.post) {
-    sourceDiv.style.display = "block";
-    sourceAnchor.href = obj.post;
-    sourceAnchor.textContent = obj.post.replace(/^https?:\/\//, "");
-  } else {
-    sourceDiv.style.display = "none";
-  }
-
-  updateFavoriteButton();
-
-  if (fromSpin) {
-    addToHistory(index);
-    playSound("sfx-ding");
-  }
+// FAVORITES PANEL
+function toggleFavorites() {
+  document.getElementById("favorites-container").classList.toggle("open");
+  renderFavorites();
 }
 
-// Spin
-function spin() {
-  if (!images || images.length === 0) return;
+function renderFavorites() {
+  const list = document.getElementById("favorites-list");
+  list.innerHTML = "";
 
-  playSound("sfx-spin");
+  favorites.forEach(url => {
+    const item = document.createElement("div");
+    item.className = "history-item";
 
-  const img = document.getElementById("image");
-  const spinner = document.getElementById("spinner");
+    const source = imageToSource[url] || "#";
 
-  img.style.opacity = "0";
-  img.style.filter = "blur(12px)";
-  img.style.display = "none";
-  spinner.style.display = "block";
+    item.innerHTML = `
+      <img class="history-thumb" src="${url}" onclick="jumpToImage('${url}')">
+      <div class="history-meta">
+        <a href="${source}" target="_blank">Source</a>
+        <span class="history-fav" onclick="toggleFavorite('${url}')">❤️</span>
+      </div>
+    `;
 
-  const finalIndex = getNextIndex();
-  if (finalIndex === null) return;
-
-  // Rolling effect
-  let rollCount = 0;
-  const maxRolls = 10;
-  const rollInterval = 100;
-
-  const roller = setInterval(() => {
-    rollCount++;
-    const randomIndex = Math.floor(Math.random() * images.length);
-    const tempObj = images[randomIndex];
-
-    img.style.display = "block";
-    img.src = tempObj.image;
-    img.style.opacity = "1";
-    img.style.filter = "blur(12px)";
-
-    if (rollCount % 2 === 0) {
-      playSound("sfx-tick");
-    }
-
-    if (rollCount >= maxRolls) {
-      clearInterval(roller);
-      showFinal(finalIndex);
-    }
-  }, rollInterval);
-
-  function showFinal(idx) {
-    const finalObj = images[idx];
-    const tempImg = new Image();
-    tempImg.onload = function () {
-      const delay = 800;
-      setTimeout(() => {
-        spinner.style.display = "block";
-
-        img.src = finalObj.image;
-        img.style.display = "block";
-        img.style.opacity = "0";
-        img.style.filter = "blur(12px)";
-
-        img.getBoundingClientRect();
-
-        spinner.style.display = "none";
-        img.style.opacity = "1";
-        img.style.filter = "blur(0px)";
-
-        showImageByIndex(idx, true);
-      }, delay);
-    };
-    tempImg.src = finalObj.image;
-  }
+    list.appendChild(item);
+  });
 }
 
-// History panel toggle
-function toggleHistory() {
-  const container = document.getElementById("history-container");
-  if (!container) return;
-  container.classList.toggle("open");
+// JUMP TO IMAGE
+function jumpToImage(url) {
+  currentImage = url;
+  showImage(url);
 }
 
-// Shuffle toggle
-function toggleShuffle() {
-  const cb = document.getElementById("shuffle-toggle");
-  shuffleMode = cb.checked;
-  if (shuffleMode) {
-    initShufflePool();
-  }
-}
-
-// Keyboard controls
-document.addEventListener("keydown", (e) => {
-  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
-  if (tag === "input" || tag === "textarea") return;
-
+// KEYBOARD SHORTCUTS
+document.addEventListener("keydown", e => {
   if (e.code === "Space") {
     e.preventDefault();
     spin();
-  } else if (e.key === "h" || e.key === "H") {
-    toggleHistory();
-  } else if (e.key === "f" || e.key === "F") {
+  }
+  if (e.key.toLowerCase() === "f") {
     toggleFavorite();
-  } else if (e.key === "ArrowLeft") {
-    if (historyList.length > 0 && historyPos > 0) {
-      historyPos--;
-      const entry = historyList[historyPos];
-      showImageByIndex(entry.index, false);
-    }
-  } else if (e.key === "ArrowRight") {
-    if (historyList.length > 0 && historyPos < historyList.length - 1) {
-      historyPos++;
-      const entry = historyList[historyPos];
-      showImageByIndex(entry.index, false);
-    }
+  }
+  if (e.key.toLowerCase() === "h") {
+    toggleHistory();
   }
 });

@@ -51,7 +51,7 @@ function spin() {
 
   sourceLink.style.display = "none";
 
-  document.getElementById("sfx-spin").play();
+  playSound("sfx-tick");
 
   // Number of roller frames
   const totalFrames = 22;
@@ -96,7 +96,7 @@ function spin() {
       showImage(choice.image);
       renderHistory();
 
-      document.getElementById("sfx-ding").play();
+      playSound("sfx-ding");
       spinner.style.display = "none";
     }
   }

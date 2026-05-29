@@ -18,13 +18,17 @@ function spin() {
   img.style.filter = "blur(12px)";
   img.style.display = "none";
 
-  // Show spinner
+  // Show spinner at the start
   spinner.style.display = "block";
 
   // --- FEATURE 3: Rolling effect ---
   let rollCount = 0;
-  const maxRolls = 10; // number of rapid images shown
+  const maxRolls = 10;      // number of rapid images
   const rollInterval = 100; // ms between each roll
+
+  // Hide spinner during rolling so we can see the images
+  spinner.style.display = "none";
+  img.style.display = "block";
 
   const roller = setInterval(() => {
     rollCount++;
@@ -32,7 +36,8 @@ function spin() {
     // Pick a random image for the rolling preview
     const randomIndex = Math.floor(Math.random() * images.length);
     img.src = images[randomIndex];
-    img.style.display = "block";
+
+    // Keep it blurred during rolling
     img.style.opacity = "1";
     img.style.filter = "blur(12px)";
 
@@ -53,7 +58,8 @@ function spin() {
       const delay = 800; // anticipation delay
 
       setTimeout(() => {
-        spinner.style.display = "none";
+        // Show spinner briefly during anticipation
+        spinner.style.display = "block";
 
         // Set final image
         img.src = finalImage;
@@ -64,7 +70,8 @@ function spin() {
         // Force browser to register blurred state
         img.getBoundingClientRect();
 
-        // Animate reveal
+        // Hide spinner and reveal image
+        spinner.style.display = "none";
         img.style.opacity = "1";
         img.style.filter = "blur(0px)";
 

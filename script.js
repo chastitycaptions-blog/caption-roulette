@@ -28,25 +28,30 @@ function toggleShuffle() {
   shuffleMode = document.getElementById("shuffle-toggle").checked;
 }
 
-// SPIN with smooth roller animation
+// SPIN with smooth roller animation (fixed visibility)
 function spin() {
   const spinner = document.getElementById("spinner");
   const img = document.getElementById("image");
   const sourceLink = document.getElementById("source-link");
 
   spinner.style.display = "block";
-  img.style.display = "none";
+
+  // IMPORTANT FIX — make image visible for roller frames
+  img.style.display = "block";
+  img.style.opacity = "0";
+  img.style.filter = "blur(12px)";
+
   sourceLink.style.display = "none";
 
   document.getElementById("sfx-spin").play();
 
   // Number of roller frames
-  const totalFrames = 22;  
+  const totalFrames = 22;
   let frame = 0;
 
   // Animation speed easing (fast → slow)
   function frameDelay(n) {
-    return 20 + Math.pow(n, 1.8); 
+    return 20 + Math.pow(n, 1.8);
   }
 
   function rollerStep() {
@@ -54,12 +59,13 @@ function spin() {
       // Pick a random image for the roller
       const random = images[Math.floor(Math.random() * images.length)];
       img.src = random.image;
-      img.style.display = "block";
+
       img.style.opacity = "0.4";
       img.style.filter = "blur(6px)";
 
-      document.getElementById("sfx-tick").currentTime = 0;
-      document.getElementById("sfx-tick").play();
+      const tick = document.getElementById("sfx-tick");
+      tick.currentTime = 0;
+      tick.play();
 
       frame++;
       setTimeout(rollerStep, frameDelay(frame));
@@ -89,6 +95,7 @@ function spin() {
 
   rollerStep();
 }
+
 
 
 // SHOW IMAGE

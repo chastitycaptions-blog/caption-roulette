@@ -28,7 +28,7 @@ function toggleShuffle() {
   shuffleMode = document.getElementById("shuffle-toggle").checked;
 }
 
-// SPIN
+// SPIN with smooth roller animation
 function spin() {
   const spinner = document.getElementById("spinner");
   const img = document.getElementById("image");
@@ -40,26 +40,56 @@ function spin() {
 
   document.getElementById("sfx-spin").play();
 
-  setTimeout(() => {
-    let choice;
+  // Number of roller frames
+  const totalFrames = 22;  
+  let frame = 0;
 
-    if (shuffleMode) {
-      const unused = images.filter(i => !history.includes(i.image));
-      if (unused.length === 0) history = [];
-      choice = unused[Math.floor(Math.random() * unused.length)];
+  // Animation speed easing (fast → slow)
+  function frameDelay(n) {
+    return 20 + Math.pow(n, 1.8); 
+  }
+
+  function rollerStep() {
+    if (frame < totalFrames) {
+      // Pick a random image for the roller
+      const random = images[Math.floor(Math.random() * images.length)];
+      img.src = random.image;
+      img.style.display = "block";
+      img.style.opacity = "0.4";
+      img.style.filter = "blur(6px)";
+
+      document.getElementById("sfx-tick").currentTime = 0;
+      document.getElementById("sfx-tick").play();
+
+      frame++;
+      setTimeout(rollerStep, frameDelay(frame));
     } else {
-      choice = images[Math.floor(Math.random() * images.length)];
+      // Final image selection
+      let choice;
+
+      if (shuffleMode) {
+        const unused = images.filter(i => !history.includes(i.image));
+        if (unused.length === 0) history = [];
+        choice = unused[Math.floor(Math.random() * unused.length)];
+      } else {
+        choice = images[Math.floor(Math.random() * images.length)];
+      }
+
+      currentImage = choice.image;
+      history.push(choice.image);
+
+      // Show final image cleanly
+      showImage(choice.image);
+      renderHistory();
+
+      document.getElementById("sfx-ding").play();
+      spinner.style.display = "none";
     }
+  }
 
-    currentImage = choice.image;
-    showImage(choice.image);
-
-    history.push(choice.image);
-    renderHistory();
-
-    spinner.style.display = "none";
-  }, 600);
+  rollerStep();
 }
+
 
 // SHOW IMAGE
 function showImage(url) {

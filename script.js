@@ -24,6 +24,13 @@ function dismissNSFW() {
   setTimeout(() => overlay.style.display = "none", 500);
 }
 
+function playSound(id) {
+  if (!soundEnabled) return;
+  const el = document.getElementById(id);
+  el.currentTime = 0;
+  el.play();
+}
+
 // SHUFFLE MODE
 function toggleShuffle() {
   shuffleMode = document.getElementById("shuffle-toggle").checked;
@@ -228,3 +235,8 @@ document.addEventListener("keydown", e => {
     toggleHistory();
   }
 });
+
+document.getElementById("sound-toggle").addEventListener("change", e => {
+  soundEnabled = e.target.checked;
+});
+

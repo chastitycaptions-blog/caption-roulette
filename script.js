@@ -14,9 +14,9 @@ function spin() {
   const spinner = document.getElementById("spinner");
 
   // Reset image state
-  img.style.display = "none";
   img.style.opacity = "0";
   img.style.filter = "blur(12px)";
+  img.style.display = "none";
 
   // Show spinner
   spinner.style.display = "block";
@@ -36,10 +36,12 @@ function spin() {
 
       // Set the image source
       img.src = selectedImage;
+
+      // Make the image visible *while still blurred*
       img.style.display = "block";
 
-      // FORCE the browser to register the blur state
-      void img.offsetWidth; // <-- magic line
+      // FORCE the browser to register the blurred state
+      img.getBoundingClientRect();  // <-- this is the reliable version
 
       // Now animate to clear blur + fade in
       img.style.opacity = "1";

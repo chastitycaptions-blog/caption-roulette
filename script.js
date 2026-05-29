@@ -5,6 +5,7 @@ let history = [];
 let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
 let currentImage = null;
 let shuffleMode = false;
+let soundEnabled = true;
 
 // LOAD JSON (MATCHES YOUR images.json FORMAT)
 fetch("images.json")

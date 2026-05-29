@@ -286,4 +286,27 @@ function toggleShuffle() {
 
 // Keyboard controls
 document.addEventListener("keydown", (e) => {
-  const tag =
+  const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : "";
+  if (tag === "input" || tag === "textarea") return;
+
+  if (e.code === "Space") {
+    e.preventDefault();
+    spin();
+  } else if (e.key === "h" || e.key === "H") {
+    toggleHistory();
+  } else if (e.key === "f" || e.key === "F") {
+    toggleFavorite();
+  } else if (e.key === "ArrowLeft") {
+    if (historyList.length > 0 && historyPos > 0) {
+      historyPos--;
+      const entry = historyList[historyPos];
+      showImageByIndex(entry.index, false);
+    }
+  } else if (e.key === "ArrowRight") {
+    if (historyList.length > 0 && historyPos < historyList.length - 1) {
+      historyPos++;
+      const entry = historyList[historyPos];
+      showImageByIndex(entry.index, false);
+    }
+  }
+});

@@ -57,25 +57,32 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-  </style>
-</head>
-<body>
 
-  <h1>Caption Roulette 🎰</h1>
-  <button onclick="spin()">Spin</button>
+    /* --- NSFW Overlay --- */
+    #nsfw-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
 
-  <!-- Spinner -->
-  <div id="spinner">
-    <div class="loader"></div>
-  </div>
+    #nsfw-box {
+      background: #222;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 350px;
+      text-align: center;
+      border: 2px solid #ff4081;
+    }
 
-  <!-- Image -->
-  <div>
-    <img id="image" src="">
-  </div>
-
-  <!-- IMPORTANT: cache‑busting version tag -->
-  <script src="script.js?v=5"></script>
-
-</body>
-</html>
+    #nsfw-box h2 {
+      margin-bottom: 

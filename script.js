@@ -7,7 +7,21 @@ let currentImage = null;
 let shuffleMode = false;
 let soundEnabled = true;
 
-// LOAD JSON (MATCHES YOUR images.json FORMAT)
+// FORCE AUDIO TO PRE-DECODE (fixes delayed first tick)
+window.addEventListener("load", () => {
+  ["sfx-tick", "sfx-ding"].forEach(id => {
+    const el = document.getElementById(id);
+    el.load();
+    el.play().then(() => {
+      el.pause();
+      el.currentTime = 0;
+    }).catch(() => {
+      // Chrome will block this — that's fine, decoding still happens
+    });
+  });
+});
+
+// LOAD JSON (MATCHES images.json FORMAT)
 fetch("images.json")
   .then(r => r.json())
   .then(data => {
@@ -24,6 +38,7 @@ function dismissNSFW() {
   setTimeout(() => overlay.style.display = "none", 500);
 }
 
+// SOUND WRAPPER (respects mute toggle)
 function playSound(id) {
   if (!soundEnabled) return;
   const el = document.getElementById(id);
@@ -36,7 +51,13 @@ function toggleShuffle() {
   shuffleMode = document.getElementById("shuffle-toggle").checked;
 }
 
-// SPIN with smooth roller animation (instant tick + mute support)
+// ⭐ HANDLE SPIN — guaranteed instant tick
+function handleSpin() {
+  playSound("sfx-tick"); // instant, user-gesture safe
+  spin();
+}
+
+// SPIN with smooth roller animation
 function spin() {
   const spinner = document.getElementById("spinner");
   const img = document.getElementById("image");
@@ -50,9 +71,6 @@ function spin() {
   img.style.filter = "blur(12px)";
 
   sourceLink.style.display = "none";
-
-  // ⭐ Play an immediate tick the moment Spin is clicked
-  playSound("sfx-tick");
 
   // Number of roller frames
   const totalFrames = 22;
@@ -72,7 +90,7 @@ function spin() {
       img.style.opacity = "0.4";
       img.style.filter = "blur(6px)";
 
-      // ⭐ Tick for each roller frame (respects mute toggle)
+      // Tick for each roller frame
       playSound("sfx-tick");
 
       frame++;
@@ -96,7 +114,7 @@ function spin() {
       showImage(choice.image);
       renderHistory();
 
-      // ⭐ Final ding (respects mute toggle)
+      // Final ding
       playSound("sfx-ding");
 
       spinner.style.display = "none";
@@ -105,9 +123,6 @@ function spin() {
 
   rollerStep();
 }
-
-
-
 
 // SHOW IMAGE
 function showImage(url) {
@@ -229,7 +244,7 @@ function jumpToImage(url) {
 document.addEventListener("keydown", e => {
   if (e.code === "Space") {
     e.preventDefault();
-    spin();
+    handleSpin();
   }
   if (e.key.toLowerCase() === "f") {
     toggleFavorite();
@@ -239,7 +254,7 @@ document.addEventListener("keydown", e => {
   }
 });
 
+// SOUND TOGGLE
 document.getElementById("sound-toggle").addEventListener("change", e => {
   soundEnabled = e.target.checked;
 });
-

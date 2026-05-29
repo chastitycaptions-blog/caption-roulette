@@ -1,5 +1,6 @@
 let images = [];
 
+// Load the JSON file
 fetch("images.json")
   .then(response => response.json())
   .then(data => {
@@ -9,9 +10,25 @@ fetch("images.json")
 function spin() {
   if (images.length === 0) return;
 
-  const randomIndex = Math.floor(Math.random() * images.length);
   const img = document.getElementById("image");
-  img.src = images[randomIndex];
-  img.style.display = "block";
-}
+  const spinner = document.getElementById("spinner");
 
+  // Hide the image, show the spinner
+  img.style.display = "none";
+  spinner.style.display = "block";
+
+  // Pick a random image
+  const randomIndex = Math.floor(Math.random() * images.length);
+  const selectedImage = images[randomIndex];
+
+  // Preload the image
+  const tempImg = new Image();
+  tempImg.onload = function () {
+    // When loaded, hide spinner and show image
+    spinner.style.display = "none";
+    img.src = selectedImage;
+    img.style.display = "block";
+  };
+
+  tempImg.src = selectedImage;
+}
